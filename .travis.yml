@@ -1,0 +1,22 @@
+---
+required: sudo
+services:
+  - docker
+
+before_install:
+  - docker build -t lnbnatera/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true lnbnatera/react-test npm test
+
+after_success:
+  - docker build -t lnbnatera/multi-client ./client
+  - docker build -t lnbnatera/multi-nginx ./nginx
+  - docker build -t lnbnatera/multi-server ./server
+  - docker build -t lnbnatera/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push lnbnatera/multi-client
+  - docker push lnbnatera/multi-nginx
+  - docker push lnbnatera/multi-server
+  - docker push lnbnatera/multi-worker
+...
